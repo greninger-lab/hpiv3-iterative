@@ -1,0 +1,14 @@
+### Preprocessing commands for iterative HPIV3 project
+
+# Adapter and quality trim all files with Trimmomatic
+for file in *L001_R1_001.fastq.gz; do trimmomatic SE $1*L001_R1_001.fastq.gz $1.R1.SEtrimmed.fastq.gz ILLUMINACLIP:/Users/gerbix/Downloads/All_adapters1.fa:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:20 MINLEN:25; done
+
+# For patient 2, extra trimming step 
+for file in *trimmed.fastq.gz; do i=${file%%.R1*}; cutadapt -m 25 -u -7 -u 7 -o $i'_7offboth_m25.fastq.gz' $file; done
+
+### LAVA
+# patient 1
+nextflow run greninger-lab/lava -r master -with-docker ubuntu:18.04 -resume -c ~/nextflow.speedy.config -profile Cloud --METADATA metadata.csv --FASTA SC9779.fasta --GFF SC9779.gff --CONTROL_FASTQ old_supplemented_9779.fastq.gz --OUTDIR old_mngs_supplemented_output/ --CATEGORICAL
+
+# patient 2
+nextflow run greninger-lab/lava -r master -with-docker ubuntu:18.04 -resume -c ~/nextflow.speedy.config -profile Cloud --METADATA metadata.csv --FASTA SC4465.fasta --GFF SC4465.gff --CONTROL_FASTQ SRR5872111.R1.SEtrimmed.fastq.gz_7offboth_m25.fastq.gz --OUTDIR FINAL_7offboth_renamed/ --CATEGORICAL
